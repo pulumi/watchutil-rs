@@ -943,7 +943,7 @@ dependencies = [
 
 [[package]]
 name = "pulumi-watch"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "clap",
  "embed-resource",
