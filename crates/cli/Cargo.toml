@@ -1,6 +1,6 @@
 [package]
 name = "pulumi-watch"
-version = "0.0.1"
+version = "0.1.0"
 
 authors = ["Aaron Friel <mayreply@aaronfriel.com>"]
 license = "Apache-2.0"
