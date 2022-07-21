@@ -16,8 +16,13 @@ use watchexec_filterer_globset::GlobsetFilterer;
 #[derive(Parser, Debug, Clone)]
 #[structopt(name = "pulumi-watch")]
 pub struct ProgramArgs {
-  #[structopt(required = true, value_parser, value_name = "DIR", value_hint = clap::ValueHint::DirPath)]
-  path: PathBuf,
+  // Root directory, or project origin, to watch. Used to configure filters.
+  #[structopt(short = 'o', long, required = true, value_parser, value_name = "DIR", value_hint = clap::ValueHint::DirPath)]
+  origin: PathBuf,
+
+  // Directory to watch. May be specified multiple times.
+  #[structopt(short = 'w', long, required = true, value_parser, value_name = "DIR", value_hint = clap::ValueHint::DirPath)]
+  watch: Vec<PathBuf>,
 }
 
 #[derive(StructOpt, Debug, Clone)]
@@ -49,10 +54,10 @@ async fn main() -> Result<()> {
   ];
 
   let mut runtime = RuntimeConfig::default();
-  runtime.pathset([args.path.clone()]);
+  runtime.pathset(args.watch);
   runtime.action_throttle(Duration::from_millis(250));
 
-  let filter = GlobsetFilterer::new(args.path, [], ignores, [], [])
+  let filter = GlobsetFilterer::new(args.origin, [], ignores, [], [])
     .await
     .into_diagnostic()?;
 
