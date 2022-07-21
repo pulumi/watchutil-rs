@@ -1,6 +1,6 @@
 [package]
 name = "pulumi-watch"
-version = "0.0.1"
+version = "0.1.0"
 
 authors = ["Aaron Friel <mayreply@aaronfriel.com>"]
 license = "Apache-2.0"
@@ -14,8 +14,13 @@ edition = "2021"
 [dependencies]
 clap = { version = "3.2.13", features = ["derive"] }
 futures = "0.3.19"
+ignore-files = "1.0.0"
+miette = "5.1.1"
+thiserror = "1.0.31"
 tokio = { version = "1.15.0", features = ["full"] }
 tokio-util = "0.7.1"
+watchexec = "2.0.0"
+watchexec-filterer-globset = "1.0.0"
 
 [build-dependencies]
 embed-resource = "1.6.1"
