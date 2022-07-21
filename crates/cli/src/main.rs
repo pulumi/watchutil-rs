@@ -1,6 +1,16 @@
-use std::path::{PathBuf};
+use std::{path::PathBuf, sync::Arc, time::Duration};
 
 use clap::{Parser, StructOpt};
+use miette::{Diagnostic, IntoDiagnostic, Result};
+use thiserror::Error;
+use watchexec::{
+  action::{Action, Outcome},
+  config::{InitConfig, RuntimeConfig},
+  handler::PrintDebug,
+  signal::source::MainSignal,
+  Watchexec,
+};
+use watchexec_filterer_globset::GlobsetFilterer;
 
 /// Monitor a directory and emit a newline line on stdout on change.
 #[derive(Parser, Debug, Clone)]
@@ -14,6 +24,64 @@ pub struct ProgramArgs {
 struct Options {}
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
+  let args = ProgramArgs::parse();
+
+  let mut init = InitConfig::default();
+  init.on_error(PrintDebug(std::io::stderr()));
+
+  use std::path::MAIN_SEPARATOR as SEP;
+  let ignores: Vec<(String, Option<PathBuf>)> = vec![
+    (format!("**{s}.DS_Store", s = SEP), None),
+    (String::from("*.py[co]"), None),
+    (String::from("#*#"), None),
+    (String::from(".#*"), None),
+    (String::from(".*.kate-swp"), None),
+    (String::from(".*.sw?"), None),
+    (String::from(".*.sw?x"), None),
+    (format!("**{s}.bzr{s}**", s = SEP), None),
+    (format!("**{s}_darcs{s}**", s = SEP), None),
+    (format!("**{s}.fossil-settings{s}**", s = SEP), None),
+    (format!("**{s}.git{s}**", s = SEP), None),
+    (format!("**{s}.hg{s}**", s = SEP), None),
+    (format!("**{s}.pijul{s}**", s = SEP), None),
+    (format!("**{s}.svn{s}**", s = SEP), None),
+  ];
+
+  let mut runtime = RuntimeConfig::default();
+  runtime.pathset([args.path.clone()]);
+  runtime.action_throttle(Duration::from_millis(250));
+
+  let filter = GlobsetFilterer::new(args.path, [], ignores, [], [])
+    .await
+    .into_diagnostic()?;
+
+  runtime.filterer(Arc::new(filter));
+  let we = Watchexec::new(init, runtime.clone()).into_diagnostic()?;
+
+  runtime.on_action(move |action: Action| async move {
+    for e in action.events.clone().iter() {
+      eprintln!("Got event {e:?}");
+      for s in e.signals() {
+        eprintln!("Got signal {s:?}");
+        if let MainSignal::Interrupt | MainSignal::Quit | MainSignal::Terminate = s {
+          action.outcome(Outcome::Exit);
+          return Ok(());
+        }
+      }
+    }
+
+    println!("💜");
+
+    Ok(()) as Result<(), NoneError>
+  });
+
+  we.reconfigure(runtime).into_diagnostic()?;
+  we.main().await.into_diagnostic()?.into_diagnostic()?;
   Ok(())
 }
+
+/// Only needed because our handler is infallible - it just emits to stdout.
+#[derive(Debug, Error, Diagnostic)]
+#[error("stub")]
+struct NoneError;
