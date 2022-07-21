@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+	"crates/cli",
+]
+
+[profile.release]
+debug = 1 # for stack traces
+lto = "fat"
+codegen-units = 1
