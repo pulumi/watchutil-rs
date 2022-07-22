@@ -96,7 +96,7 @@ jobs:
         run: cargo run -p pulumi-watch -- --help
 
   publish:
-    needs: [build, test]
+    needs: [build, test, info]
     uses: ./.github/workflows/ci-publish.yml
     if: ${{ github.ref_name == 'staging' }}
     with:

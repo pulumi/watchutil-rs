@@ -9,7 +9,7 @@ on:
         type: string
       release_notes:
         required: true
-        description: "Version to produce"
+        description: "Release notes"
         type: string
 
 env:
