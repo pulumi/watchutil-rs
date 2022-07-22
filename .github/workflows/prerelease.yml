@@ -8,17 +8,25 @@ on:
         description: "Version to publish"
         type: string
 
-concurrency: release
+concurrency:
+  group: release-${{ inputs.version }}
 
 jobs:
   info:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      release_notes: ${{ fromJSON(steps.notes.outputs.notes_json) }}
-      announce: ${{ steps.announce.outputs.announce }}
+      release_notes: ${{ fromJSON(steps.notes.outputs.release_notes) }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install git-cliff
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: git-cliff
+          args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
+          version: 0.8.1
       - name: Extract release notes
         id: notes
         shell: bash
@@ -27,8 +35,9 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           release_commit: ${{ github.event.head_commit.message }}
         run: |
-          CHANGELOG="$(./.github/scripts/get-changelog)"
-          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
+          PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
+          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}")"
+          ./.github/scripts/set-output release_notes "${CHANGELOG}"
   build:
     strategy:
       matrix:
@@ -109,8 +118,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
 
     env:
-      version: ${{ needs.info.outputs.cli_version }}
-      dst: pulumi-watch-${{ needs.info.outputs.cli_version }}-${{ matrix.target }}
+      version: ${{ inputs.version }}
+      dst: pulumi-watch-v${{ inputs.version }}-${{ matrix.target }}
 
     steps:
       - uses: actions/checkout@v2
@@ -242,7 +251,7 @@ jobs:
         shell: bash
         env:
           RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
-          version: ${{ needs.info.outputs.cli_version }}
+          version: ${{ inputs.version }}
         run: |
           set -u
           echo "$RELEASE_KEY" > release.key
@@ -261,8 +270,8 @@ jobs:
 
       - uses: ncipollo/release-action@3d2de22e3d0beab188d8129c27f103d8e91bf13a
         with:
-          name: CLI v${{ needs.info.outputs.cli_version }}
-          tag: cli-v${{ needs.info.outputs.cli_version }}
+          name: CLI v${{ inputs.version }}
+          tag: cli-v${{ inputs.version }}
           draft: true
           prerelease: true
           allowUpdates: true
@@ -275,7 +284,8 @@ jobs:
           removeArtifacts: true
           replacesArtifacts: true
           artifactErrorsFailBuild: true
-          artifacts: pulumi-watch-*.tar.gz
+          artifacts: |
+            pulumi-watch-*.tar.gz
             pulumi-watch-*.zip
             *SUMS*
           # pulumi-watch-*.deb

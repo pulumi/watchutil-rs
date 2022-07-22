@@ -15,15 +15,18 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
+    - uses: actions/checkout@v2
     - name: Compute version
       id: version
       shell: bash
       run: |
         # Sets output VERSION
-        ./.github/scripts/get-version
+        VERSION="$(./.github/scripts/get-version)"
+
+        ./.github/scripts/set-output version "$VERSION"
   prerelease:
     needs: [info]
     uses: ./.github/workflows/prerelease.yml
     with:
-      version: ${{ needs.info.outputs.version }}
+      version: ${{ fromJson(needs.info.outputs.version) }}
     secrets: inherit

@@ -1,26 +1,21 @@
 #!/bin/bash
 
-set -eo pipefail
+set -euo pipefail -x
 
 >&2 echo "::group::Get changelog"
 trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
 
-# Argument may be of the form ((release-)?v)?MAJOR.MINOR.PATCH, or a commitish.
-PREVIOUS_VERSION="$1"
-shift 1
+# Argument must be a committish or release tag.
+PREVIOUS_VERSION="${1:-""}"
+if [ -z "${PREVIOUS_VERSION}" ]; then
+  >&2 echo "::error::Previous version argument is required, use a release tag or commitish."
+  exit 1
+fi
 # All other arguments are passed to git-cliff as is.
+shift 1
 
 # For debugging, use a commit other than HEAD as the 'current commit' to calculate the changelog.
 CURRENT_COMMIT="${CURRENT_COMMIT:-HEAD}"
-VERSION="$(echo -n "$VERSION" | sed 's/(release-)?v/release-v/')"
-
-if [ -z "${PREVIOUS_VERSION}" ]; then
-  PREVIOUS_VERSION="$(./.scripts/github/get-previous-version)"
-else
-  # Handle "release-v0.0.1" and "v0.0.1"
-  PREVIOUS_VERSION="$(echo -n "${PREVIOUS_VERSION}" | sed 's/(release-)?v/release-v/')"
-  >&2 echo "::debug::Previous version tag: ${PREVIOUS_VERSION}"
-fi
 
 if git merge-base --is-ancestor "${PREVIOUS_VERSION}" "${CURRENT_COMMIT}"; then
   >&2 echo "::debug::Previous version is an ancestor."

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -euo pipefail
 
 >&2 echo "::group::Get changelog comment"
 trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
@@ -8,7 +8,7 @@ trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
 # Get the changelog as it would rendered on a pull request comment.
 
 PREVIOUS_VERSION="$1"
-CHANGELOG_REQUIRED="$2"
+CHANGELOG_REQUIRED="${2:-"true"}"
 ADDITIONAL_COMMENT="${3:-""}"
 
 CHANGELOG=$(./.github/scripts/get-changelog "${PREVIOUS_VERSION}" --with-commit="${ADDITIONAL_COMMENT}" --unreleased --strip=all)
