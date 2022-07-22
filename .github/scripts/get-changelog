@@ -11,7 +11,7 @@ shift 1
 # All other arguments are passed to git-cliff as is.
 
 # For debugging, use a commit other than HEAD as the 'current commit' to calculate the changelog.
-CURRENT_COMMIT="${GITHUB_REF_NAME:-HEAD}"
+CURRENT_COMMIT="${CURRENT_COMMIT:-HEAD}"
 VERSION="$(echo -n "$VERSION" | sed 's/(release-)?v/release-v/')"
 
 if [ -z "${PREVIOUS_VERSION}" ]; then
