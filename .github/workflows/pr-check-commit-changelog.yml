@@ -29,16 +29,16 @@ jobs:
         run:
           PREVIOUS_VERSION="${{ github.event.pull_request.base.sha }}"
           CHANGELOG_REQUIRED="${{ !contains(github.event.pull_request.labels.*.name, 'impact/no-changelog-required') }}"
-          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}")"
+          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}" "${{ github.event.pull_request.body }}")"
 
-          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}" --with-commit "${{ github.event.pull_request.body }}"
+          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: Changelog entries
+          body-includes: "# Changelog"
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v2
@@ -48,5 +48,5 @@ jobs:
           body: |
             # Changelog
 
-            ${{ steps.changelog.outputs.CHANGELOG }}
+            ${{ fromJSON(steps.changelog.outputs.CHANGELOG) }}
           edit-mode: replace

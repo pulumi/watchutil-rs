@@ -32,4 +32,4 @@ fi
 
 >&2 echo "::debug::Merge base ${MERGE_BASE}"
 
-git-cliff "${MERGE_BASE}..${CURRENT_COMMIT}" "${@}"
+git-cliff "${@}" -- "${MERGE_BASE}..${CURRENT_COMMIT}"
