@@ -9,6 +9,52 @@ on:
       - "*"
 
 jobs:
+  info:
+    name: Gather info
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_notes: ${{ fromJSON(steps.notes.outputs.release_notes) }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Compute version
+      id: version
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
+      run: |
+        COMMIT_TITLE="$(git log -1 --pretty=%B)"
+        PR_NUMBER="$(echo -n "$COMMIT_TITLE" | sed s/^.*#// | tr -cd '[:digit:]')"
+        TARGET_BRANCH="$(gh pr view "${PR_NUMBER}" --json baseRefName --jq '.baseRefName')"
+
+        # Sets output VERSION
+        VERSION="$(./.github/scripts/get-version "${TARGET_BRANCH}")"
+
+        ./.github/scripts/set-output version "${VERSION}"
+    - name: Install git-cliff
+      uses: baptiste0928/cargo-install@v1
+      with:
+        crate: git-cliff
+        args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
+        version: 0.8.1
+    - name: Extract release notes
+      id: notes
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
+      run: |
+        PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
+        CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}")"
+        ./.github/scripts/set-output release_notes "${CHANGELOG}" "--tag ${{ steps.version.outputs.version }}"
+  build:
+    needs: [info]
+    uses: ./.github/workflows/ci-build.yml
+    with:
+      version: ${{ fromJson(needs.info.outputs.version) }}
+    secrets: inherit
+
   test:
     strategy:
       matrix:
@@ -48,3 +94,12 @@ jobs:
           command: test
       - name: Check that CLI runs
         run: cargo run -p pulumi-watch -- --help
+
+  publish:
+    needs: [build, test]
+    uses: ./.github/workflows/ci-publish.yml
+    if: ${{ github.ref_name == 'staging' }}
+    with:
+      version: ${{ fromJson(needs.info.outputs.version) }}
+      release_notes: ${{ fromJson(needs.info.outputs.release_notes )}}
+    secrets: inherit
