@@ -13,7 +13,7 @@ jobs:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ fromJSON(steps.version.outputs.version) }}
       release_notes: ${{ fromJSON(steps.notes.outputs.release_notes) }}
     steps:
     - uses: actions/checkout@v2
@@ -100,6 +100,6 @@ jobs:
     uses: ./.github/workflows/ci-publish.yml
     if: ${{ github.ref_name == 'staging' }}
     with:
-      version: ${{ fromJson(needs.info.outputs.version) }}
-      release_notes: ${{ fromJson(needs.info.outputs.release_notes )}}
+      version: ${{ needs.info.outputs.version }}
+      release_notes: ${{ needs.info.outputs.release_notes }}
     secrets: inherit
