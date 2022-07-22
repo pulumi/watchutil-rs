@@ -9,8 +9,9 @@ trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
 
 PREVIOUS_VERSION="$1"
 CHANGELOG_REQUIRED="$2"
+ADDITIONAL_COMMENT="${3:-""}"
 
-CHANGELOG="$(./.github/scripts/get-changelog "${PREVIOUS_VERSION}" --unreleased --strip=all)"
+CHANGELOG=$(./.github/scripts/get-changelog "${PREVIOUS_VERSION}" --with-commit="${ADDITIONAL_COMMENT}" --unreleased --strip=all)
 if [ -n "${CHANGELOG}" ]; then
   echo -n "${CHANGELOG}"
 else
