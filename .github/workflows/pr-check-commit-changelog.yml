@@ -2,6 +2,11 @@ name: Update changelog
 
 on:
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
 
 defaults:
   run:
@@ -26,7 +31,7 @@ jobs:
           CHANGELOG_REQUIRED="${{ !contains(github.event.pull_request.labels.*.name, 'impact/no-changelog-required') }}"
           CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}")"
 
-          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
+          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}" --with-commit "${{ github.event.pull_request.body }}"
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc
