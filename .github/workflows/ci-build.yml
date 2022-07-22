@@ -89,7 +89,7 @@ jobs:
           #  cross: true
           #  experimental: true
 
-    name: Binaries for ${{ matrix.name }}
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
 
