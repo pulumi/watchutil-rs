@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if PREVIOUS_VERSION="$(gh release view --json 'tagName' -q '.tagName')"; then
+  >&2 echo "::debug::Found previous GitHub release ${PREVIOUS_VERSION}"
+  echo -n "${PREVIOUS_VERSION}" | sed 's/release-v//'
+fi

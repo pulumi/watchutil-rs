@@ -1,4 +1,4 @@
-name: Merge (with bors)
+name: Merge
 
 on:
   push:

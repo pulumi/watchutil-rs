@@ -1,11 +1,7 @@
-name: Main branch
+name: Pull Request
 
 on:
-  push:
-    branches:
-      - main
-    tags-ignore:
-      - "*"
+  pull_request:
 
 jobs:
   check:
@@ -16,7 +12,7 @@ jobs:
           - windows
           - macos
 
-    name: Check on ${{ matrix.platform }}
+    name: PR check on ${{ matrix.platform }}
     runs-on: "${{ matrix.platform }}-latest"
 
     steps:
@@ -26,7 +22,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:
-          command: check
-
+          command: clippy

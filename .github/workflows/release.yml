@@ -1,0 +1,15 @@
+on:
+  release:
+    types:
+      - published
+
+concurrency: release
+
+jobs:
+  promote:
+    name: Promote release
+    runs-on: ubuntu-latest
+    steps:
+      - name: todo
+        run:
+          echo "Success"

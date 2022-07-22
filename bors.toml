@@ -1,9 +1,6 @@
 delete_merged_branches = true
 update_base_for_deletes = true
 
-# needs to remain squash for current release process
-use_squash_merge = true
-
 status = [
 	"Test on macos with Rust stable",
 	"Test on ubuntu with Rust stable",

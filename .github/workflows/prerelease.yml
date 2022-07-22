@@ -1,37 +1,24 @@
-name: CLI Release
+name: Prerelease
 
 on:
   workflow_call:
-  workflow_dispatch:
-  push:
-    tags:
-      - "cli-v*.*.*"
+    inputs:
+      version:
+        required: true
+        description: "Version to publish"
+        type: string
+
+concurrency: release
 
 jobs:
   info:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      cli_version: ${{ steps.version.outputs.cli_version }}
       release_notes: ${{ fromJSON(steps.notes.outputs.notes_json) }}
       announce: ${{ steps.announce.outputs.announce }}
     steps:
       - uses: actions/checkout@v2
-      - name: Extract version
-        id: version
-        shell: bash
-        run: |
-          set -euxo pipefail
-
-          version=$(grep -m1 -F 'version =' crates/cli/Cargo.toml | cut -d\" -f2)
-
-          if [[ -z "$version" ]]; then
-            echo "Error: no version :("
-            exit 1
-          fi
-
-          echo "::set-output name=cli_version::$version"
-
       - name: Extract release notes
         id: notes
         shell: bash
@@ -40,27 +27,8 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           release_commit: ${{ github.event.head_commit.message }}
         run: |
-          set -euxo pipefail
-          release_pr=$(head -n1 <<< "${release_commit:-}" | grep -oP '(?<=[(]#)\d+(?=[)])')
-          if [[ -z "$release_pr" ]]; then
-            echo "::set-output name=notes_json::null"
-            exit
-          fi
-
-          gh \
-            pr --repo "$GITHUB_REPO" \
-            view "$release_pr" \
-            --json body \
-            --jq '"::set-output name=notes_json::\((.body | split("### Release notes")[1] // "") | tojson)"'
-
-      - name: Make a new announcement post
-        id: announce
-        if: endsWith(steps.version.outputs.cli_version, '.0')
-        run: echo "::set-output name=announce::Announcements"
-        # TODO: append patch release notes as comments on minor version announce discussion
-        # TODO: add link to discussion from patch release notes
-        # TODO: rename minor version announce discussion to be just CLI vX.Y (remove .0)
-
+          CHANGELOG="$(./.github/scripts/get-changelog)"
+          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
   build:
     strategy:
       matrix:
@@ -207,7 +175,7 @@ jobs:
           cp -r README.md LICENSE "$dst/"
 
       - name: Archive (tar)
-        if: '! startsWith(matrix.name, ''windows-'')'
+        if: "! startsWith(matrix.name, 'windows-')"
         run: tar cavf "$dst.tar.gz" "$dst"
       # - name: Archive (deb)
       #   if: startsWith(matrix.name, 'linux-')
@@ -241,7 +209,6 @@ jobs:
 
     name: Checksum and sign
     runs-on: ubuntu-latest
-
 
     steps:
       - uses: actions/checkout@v2
@@ -289,19 +256,26 @@ jobs:
           rm release.key
           cat {B3,SHA512}SUMS.auto.minisig
 
-      - uses: softprops/action-gh-release@50195ba7f6f93d1ac97ba8332a178e008ad176aa
+      - uses: ncipollo/release-action@3d2de22e3d0beab188d8129c27f103d8e91bf13a
         with:
-          tag_name: cli-v${{ needs.info.outputs.cli_version }}
           name: CLI v${{ needs.info.outputs.cli_version }}
-          body: ${{ needs.info.outputs.release_notes }}
-          append_body: true
-          discussion_category_name: ${{ needs.info.outputs.announce }}
-          files: |
-            pulumi-watch-*.tar.gz
-            pulumi-watch-*.tar.zst
-            pulumi-watch-*.deb
-            pulumi-watch-*.rpm
+          tag: cli-v${{ needs.info.outputs.cli_version }}
+          draft: true
+          prerelease: true
+          allowUpdates: true
+
+          body: |
+            PRERELEASE
+
+            ${{ needs.info.outputs.release_notes }}
+
+          removeArtifacts: true
+          replacesArtifacts: true
+          artifactErrorsFailBuild: true
+          artifacts: pulumi-watch-*.tar.gz
             pulumi-watch-*.zip
             *SUMS*
+          # pulumi-watch-*.deb
+          # pulumi-watch-*.rpm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

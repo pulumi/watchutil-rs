@@ -1,0 +1,47 @@
+name: Update changelog
+
+on:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install git-cliff
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: git-cliff
+          version: 0.8.1
+      - name: Changelog
+        id: changelog
+        run:
+          PREVIOUS_VERSION="${{ github.event.pull_request.base.sha }}"
+          CHANGELOG_REQUIRED="${{ !contains(github.event.pull_request.labels.*.name, 'impact/no-changelog-required') }}"
+          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}")"
+
+          ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Changelog entries
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            # Changelog
+
+            ${{ steps.changelog.outputs.CHANGELOG }}
+          edit-mode: replace

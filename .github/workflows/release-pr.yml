@@ -1,4 +1,4 @@
-name: Open a release PR
+name: Release
 on:
   workflow_dispatch:
     inputs:

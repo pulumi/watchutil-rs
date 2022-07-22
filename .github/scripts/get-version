@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eo pipefail
+
+>&2 echo "::group::Get version"
+trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
+
+# On the main branch, we always prep a release incrementing the patch version.
+# On main-v* branches, we use the version from the branch name.
+REF_NAME="${1:-"$GITHUB_REF_NAME"}"
+>&2 echo "::debug::On ref ${REF_NAME}"
+if [ "${REF_NAME}" = "main" ]; then
+  PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
+  >&2 echo "::debug::Incrementing the patch version and setting a dirty suffix."
+  VERSION="$(echo -n "$PREVIOUS_VERSION" | awk -F. -v OFS=. '{$NF += 1 ; print}')"
+else
+  >&2 echo "::debug::Using ref name as version"
+  VERSION="$(echo -n "${REF_NAME}" | sed 's/main-v//')"
+fi
+
+if [[ "$VERSION" =~ ^([0-9]+\.){2}([0-9]+) ]]; then
+  echo -n "$VERSION"
+else
+  >&2 echo "::error::The version found should end in a valid semver major.minor.patch string, such as 3.14.159."
+  exit 1
+fi
