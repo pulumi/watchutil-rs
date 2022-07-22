@@ -96,7 +96,7 @@ jobs:
           body: |
             PRERELEASE
 
-            ${{ fromJSON(needs.info.outputs.release_notes) }}
+            ${{ needs.info.outputs.release_notes }}
 
           removeArtifacts: true
           replacesArtifacts: true

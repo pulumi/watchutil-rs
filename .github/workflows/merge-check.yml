@@ -13,8 +13,8 @@ jobs:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      release_notes: ${{ steps.notes.outputs.release_notes }}
+      version: "${{ fromJSON(steps.version.outputs.version) }}"
+      release_notes: "${{ fromJSON(steps.notes.outputs.release_notes) }}"
     steps:
       - uses: actions/checkout@v2
         with:
