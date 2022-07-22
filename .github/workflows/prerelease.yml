@@ -48,8 +48,8 @@ jobs:
           # - linux-armhf-gnu
           - linux-arm64-gnu
           # - linux-arm64-musl
-          # - mac-x86-64
-          # - mac-arm64
+          - mac-x86-64
+          - mac-arm64
           - windows-x86-64
         include:
           - name: linux-amd64-gnu
@@ -88,17 +88,17 @@ jobs:
           #   cross: true
           #   experimental: true
 
-          # - name: mac-x86-64
-          #   os: macos-latest
-          #   target: x86_64-apple-darwin
-          #   cross: false
-          #   experimental: false
+          - name: mac-x86-64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            cross: false
+            experimental: false
 
-          # - name: mac-arm64
-          #   os: macos-11.0
-          #   target: aarch64-apple-darwin
-          #   cross: true
-          #   experimental: true
+          - name: mac-arm64
+            os: macos-11.0
+            target: aarch64-apple-darwin
+            cross: true
+            experimental: true
 
           - name: windows-x86-64
             os: windows-latest
