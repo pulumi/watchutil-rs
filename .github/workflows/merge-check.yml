@@ -13,8 +13,8 @@ jobs:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ fromJSON(steps.version.outputs.version) }}
-      release_notes: ${{ fromJSON(steps.notes.outputs.release_notes) }}
+      version: ${{ steps.version.outputs.version }}
+      release_notes: ${{ steps.notes.outputs.release_notes }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -52,7 +52,7 @@ jobs:
     needs: [info]
     uses: ./.github/workflows/ci-build.yml
     with:
-      version: ${{ fromJson(needs.info.outputs.version) }}
+      version: ${{ needs.info.outputs.version }}
     secrets: inherit
 
   test:
