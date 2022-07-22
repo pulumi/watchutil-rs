@@ -119,6 +119,9 @@ jobs:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('Cargo.lock') }}
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: v${{ inputs.version }}-${{ matrix.target }}
       - name: Add musl tools
         run: sudo apt install -y musl musl-dev musl-tools
         if: endsWith(matrix.target, '-musl')
