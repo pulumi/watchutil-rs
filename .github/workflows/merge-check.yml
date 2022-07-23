@@ -103,10 +103,3 @@ jobs:
       version: ${{ needs.info.outputs.version }}
       release_notes: ${{ needs.info.outputs.release_notes }}
     secrets: inherit
-
-  merge-ok:
-    if: ${{ always() }}
-    needs: [build, test, publish]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo OK
