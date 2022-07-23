@@ -46,8 +46,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}")"
-          ./.github/scripts/set-output release_notes "${CHANGELOG}" "--tag ${{ steps.version.outputs.version }}"
+          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}" --tag "${{ steps.version.outputs.version }}")"
+          ./.github/scripts/set-output release_notes "${CHANGELOG}"
   build:
     needs: [info]
     uses: ./.github/workflows/ci-build.yml

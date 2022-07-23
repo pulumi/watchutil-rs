@@ -94,9 +94,7 @@ jobs:
           allowUpdates: true
 
           body: |
-            PRERELEASE
-
-            ${{ needs.info.outputs.release_notes }}
+            ${{ inputs.release_notes }}
 
           removeArtifacts: true
           replacesArtifacts: true
