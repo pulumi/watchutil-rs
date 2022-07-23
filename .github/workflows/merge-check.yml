@@ -13,8 +13,8 @@ jobs:
     name: Gather info
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      release_notes: ${{ steps.notes.outputs.release_notes }}
+      version: "${{ fromJSON(steps.version.outputs.version) }}"
+      release_notes: "${{ fromJSON(steps.notes.outputs.release_notes) }}"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -46,8 +46,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}")"
-          ./.github/scripts/set-output release_notes "${CHANGELOG}" "--tag ${{ steps.version.outputs.version }}"
+          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}" --tag "${{ steps.version.outputs.version }}")"
+          ./.github/scripts/set-output release_notes "${CHANGELOG}"
   build:
     needs: [info]
     uses: ./.github/workflows/ci-build.yml
@@ -96,17 +96,10 @@ jobs:
         run: cargo run -p pulumi-watch -- --help
 
   publish:
-    needs: [build, test]
+    needs: [build, test, info]
     uses: ./.github/workflows/ci-publish.yml
     if: ${{ github.ref_name == 'staging' }}
     with:
       version: ${{ needs.info.outputs.version }}
       release_notes: ${{ needs.info.outputs.release_notes }}
     secrets: inherit
-
-  merge-ok:
-    if: ${{ always() }}
-    needs: [build, test, publish]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo OK

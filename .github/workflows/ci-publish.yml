@@ -9,7 +9,7 @@ on:
         type: string
       release_notes:
         required: true
-        description: "Version to produce"
+        description: "Release notes"
         type: string
 
 env:
@@ -94,9 +94,7 @@ jobs:
           allowUpdates: true
 
           body: |
-            PRERELEASE
-
-            ${{ fromJSON(needs.info.outputs.release_notes) }}
+            ${{ inputs.release_notes }}
 
           removeArtifacts: true
           replacesArtifacts: true
