@@ -90,7 +90,7 @@ jobs:
           name: v${{ inputs.version }}
           tag: release-v${{ inputs.version }}
           draft: true
-          prerelease: true
+          prerelease: false
           allowUpdates: true
 
           body: |
