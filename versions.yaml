@@ -1,0 +1,13 @@
+replacements:
+  - file: crates/cli/Cargo.toml
+    fileFormat: sed
+    updatePath: |
+      ^version = ".*"#update-target$
+    versionFormat: |
+      version = "${SEMVER}"#update-target
+  - file: crates/cli/pulumi-watch.exe.manifest
+    fileFormat: sed
+    updatePath: |
+      ^\t\tversion="[0-9.]*\.0"$
+    versionFormat: |
+      \t\tversion="${MAJOR}.${MINOR}.${PATCH}.0"

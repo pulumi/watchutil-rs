@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -euo pipefail
 
 OUTPUT_NAME="$1"
 VALUE="$2"

@@ -1,0 +1,19 @@
+name: PR
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/ci-lint.yml
+    with:
+      super-linter: false
+
+  unit-test:
+    name: Unit Test
+    uses: ./.github/workflows/ci-unit-test.yml

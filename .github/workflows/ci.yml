@@ -46,60 +46,81 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}" --tag "${{ steps.version.outputs.version }}")"
+          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }}")"
           ./.github/scripts/set-output release_notes "${CHANGELOG}"
+
+  version:
+    # ensure versions in the repo match the intended publish version
+    name: Version Check
+    needs: [info]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          VERSION="${{ needs.info.outputs.version }}"
+
+          ./.github/scripts/update-versions "$VERSION"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Versions in files do not match expected version $VERSION."
+            echo "::group::git diff"
+            git diff
+            echo "::endgroup::"
+          fi
+
+  lint:
+    name: Lint
+    uses: ./.github/workflows/ci-lint.yml
+
   build:
+    name: Build
     needs: [info]
     uses: ./.github/workflows/ci-build.yml
     with:
       version: ${{ needs.info.outputs.version }}
     secrets: inherit
 
-  test:
-    strategy:
-      matrix:
-        include:
-          - name: stable-ubuntu
-            platform: ubuntu
-            toolchain: stable
-          - name: stable-windows
-            platform: windows
-            toolchain: stable
-          - name: stable-macos
-            platform: macos
-            toolchain: stable
-          - name: msrv-ubuntu
-            platform: ubuntu
-            toolchain: 1.58.0
-          - name: msrv-windows
-            platform: windows
-            toolchain: 1.58.0
-          - name: msrv-macos
-            platform: macos
-            toolchain: 1.58.0
-
-    name: Test on ${{ matrix.platform }} with Rust ${{ matrix.toolchain }}
-    runs-on: "${{ matrix.platform }}-latest"
-
+  build-ok:
+    # bors watches for this check
+    name: Build OK
+    needs: [build]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: "${{ matrix.toolchain }}"
-          override: true
-      - name: Run test suite
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-      - name: Check that CLI runs
-        run: cargo run -p pulumi-watch -- --help
+      - run: echo OK
+
+  unit-test:
+    name: Unit Test
+    uses: ./.github/workflows/ci-unit-test.yml
+
+  integration-test:
+    name: Integration Test
+    needs: [info, build]
+    uses: ./.github/workflows/ci-integration-test.yml
+    with:
+      version: ${{ needs.info.outputs.version }}
+
+  test-ok:
+    # bors watches for this check
+    name: Test OK
+    needs: [lint, unit-test, integration-test]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo OK
 
   publish:
-    needs: [build, test, info]
+    name: Publish
+    needs: [test-ok, info]
     uses: ./.github/workflows/ci-publish.yml
     if: ${{ github.ref_name == 'staging' }}
     with:
       version: ${{ needs.info.outputs.version }}
       release_notes: ${{ needs.info.outputs.release_notes }}
     secrets: inherit
+
+  publish-ok:
+    # bors watches for this check
+    name: Publish OK
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo OK # test, block release
