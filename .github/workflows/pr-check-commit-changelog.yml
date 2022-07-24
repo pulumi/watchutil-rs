@@ -25,7 +25,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install git-cliff
-        uses: baptiste0928/cargo-install@v1
+        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
         with:
           crate: git-cliff
           args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
@@ -41,7 +41,7 @@ jobs:
 
           ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
       - name: Find Comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@1769778a0c5bd330272d749d12c036d65e70d39d # v2.0.0
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -49,7 +49,7 @@ jobs:
           body-includes: "# Changelog"
 
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@c9fcb64660bc90ec1cc535646af190c992007c32 # v2.0.0
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}

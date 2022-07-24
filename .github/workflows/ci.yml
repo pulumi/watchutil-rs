@@ -25,16 +25,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
-          COMMIT_TITLE="$(git log -1 --pretty=%s)"
-          PR_NUMBER="$(echo -n "$COMMIT_TITLE" | sed s/^.*#// | tr -cd '[:digit:]')"
-          TARGET_BRANCH="$(gh pr view "${PR_NUMBER}" --json baseRefName --jq '.baseRefName')"
-
           # Sets output VERSION
-          VERSION="$(./.github/scripts/get-version "${TARGET_BRANCH}")"
+          VERSION="$(./.github/scripts/get-version)"
 
           ./.github/scripts/set-output version "${VERSION}"
       - name: Install git-cliff
-        uses: baptiste0928/cargo-install@v1
+        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
         with:
           crate: git-cliff
           args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
@@ -46,10 +42,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "release-v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }}")"
+          CHANGELOG="$(./.github/scripts/get-changelog "v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }} --strip header")"
           ./.github/scripts/set-output release_notes "${CHANGELOG}"
 
-  version:
+  version-check:
     # ensure versions in the repo match the intended publish version
     name: Version Check
     needs: [info]
@@ -61,11 +57,24 @@ jobs:
 
           ./.github/scripts/update-versions "$VERSION"
 
+          ERROR=false
           if [ -n "$(git status --porcelain)" ]; then
+            ERROR=true
             echo "::error::Versions in files do not match expected version $VERSION."
             echo "::group::git diff"
             git diff
             echo "::endgroup::"
+          fi
+
+          if EXISTING_RELEASE="$(gh release view "v${VERSION}")"; then
+            echo "::error::This version has already been released!"
+            echo "::group::Release $VERSION"
+            echo "$EXISTING_RELEASE"
+            echo "::endgroup::"
+          fi
+
+          if $ERROR; then
+            exit 1;
           fi
 
   lint:
@@ -109,7 +118,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: [test-ok, info]
+    needs: [test-ok, version-check, info]
     uses: ./.github/workflows/ci-publish.yml
     if: ${{ github.ref_name == 'staging' }}
     with:
