@@ -34,6 +34,7 @@ jobs:
   super-linter:
     name: GitHub Super-Linter
     runs-on: ubuntu-latest
+    # Skipped on PRs as it's quite a bit slower than the specific lints.
     if: ${{ inputs.super-linter }}
     steps:
       - uses: actions/checkout@v2

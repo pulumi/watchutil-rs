@@ -11,9 +11,6 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-concurrency:
-  group: release-${{ inputs.version }}
-
 jobs:
   build:
     strategy:

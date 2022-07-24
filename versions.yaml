@@ -1,4 +1,8 @@
 replacements:
+  - file: .github/workflows/version.txt
+    fileFormat: sed
+    updatePath: .*
+    versionFormat: ${SEMVER}
   - file: crates/cli/Cargo.toml
     fileFormat: sed
     updatePath: |

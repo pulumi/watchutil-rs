@@ -15,9 +15,6 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-concurrency:
-  group: release-${{ inputs.version }}
-
 jobs:
   sign:
     name: Checksum and sign
@@ -88,7 +85,7 @@ jobs:
       - uses: ncipollo/release-action@3d2de22e3d0beab188d8129c27f103d8e91bf13a
         with:
           name: v${{ inputs.version }}
-          tag: release-v${{ inputs.version }}
+          tag: v${{ inputs.version }}
           draft: true
           prerelease: false
           allowUpdates: true

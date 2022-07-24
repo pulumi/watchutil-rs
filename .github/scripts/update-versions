@@ -25,7 +25,7 @@ PATCH="$(cut -d'.' -f3 <<< "$VERSION")"
 >&2 echo "::debug::BUILD=$BUILD"
 
 PIPX_MISSING=false
-if ! command -v yq &>/dev/null; then
+if ! command -v pipx &>/dev/null; then
   >&2 echo "::error::pipx not installed, install pipx via pypi or homebrew"
   PIPX_MISSING=true
 fi

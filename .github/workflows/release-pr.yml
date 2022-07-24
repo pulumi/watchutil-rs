@@ -1,13 +1,51 @@
-name: Release
+name: Post-Release PR
+
 on:
-  release:
-    types:
-      - published
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        description: "Version to produce"
+        type: string
+      next_version:
+        required: true
+        description: "Version to bump files to"
+        type: string
+      release_notes:
+        required: true
+        description: "Release notes to publish"
+        type: string
 
 jobs:
-  make-release-pr:
-    name: "Make release PR"
-    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+  version-bump:
+    name: Version Bump
     runs-on: ubuntu-latest
     steps:
-      - run: echo OK
+      - uses: actions/checkout@v3
+      - run: git fetch --tags && git checkout tags/v${{ inputs.version }}
+      - env:
+          VERSION: ${{ inputs.version }}
+          NEXT_VERSION: ${{ inputs.next_version }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: |
+            Update this PR if necessary and comment `bors r+` to merge.
+        run: |
+          git switch --create "automation/release-v${VERSION}"
+
+          touch CHANGELOG.md
+          echo -en "${RELEASE_NOTES}\n\n$(cat CHANGELOG.md)" > ./CHANGELOG.md
+
+          ./.github/scripts/update-versions "${NEXT_VERSION}"
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add -A
+
+          git commit -m "prepare for next release (v${NEXT_VERSION})"
+          git push -u origin HEAD --force
+
+          gh pr create \
+            --title "prepare for next release (v${NEXT_VERSION})" \
+            --body "${PR_BODY}"
