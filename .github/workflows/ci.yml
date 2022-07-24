@@ -34,7 +34,7 @@ jobs:
 
           ./.github/scripts/set-output version "${VERSION}"
       - name: Install git-cliff
-        uses: baptiste0928/cargo-install@v1
+        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
         with:
           crate: git-cliff
           args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd

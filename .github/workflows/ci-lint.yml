@@ -15,15 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@415f4eec04da36a50da617131b6bd78f0282958b # v1.70.0
         with:
-          profile: minimal
           toolchain: stable
-          override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
+      - run: cargo clippy
 
   actionlint:
     name: actionlint

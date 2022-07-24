@@ -33,12 +33,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: Swatinem/rust-cache@6720f05bc48b77f96918929a9019fb2203ff71f8 # v2.0.0
+      - uses: dtolnay/rust-toolchain@415f4eec04da36a50da617131b6bd78f0282958b # v1.70.0
         with:
-          profile: minimal
-          toolchain: "${{ matrix.toolchain }}"
-          override: true
-      - name: Run test suite
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+          toolchain: stable
+      - run: cargo test
