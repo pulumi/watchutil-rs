@@ -1,4 +1,4 @@
-name: Update changelog
+name: PR Changelog
 
 on:
   pull_request:
@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   check:
+    name: Preview
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,10 +32,12 @@ jobs:
           version: 0.8.1
       - name: Changelog
         id: changelog
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run:
           PREVIOUS_VERSION="${{ github.event.pull_request.base.sha }}"
           CHANGELOG_REQUIRED="${{ !contains(github.event.pull_request.labels.*.name, 'impact/no-changelog-required') }}"
-          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}" "${{ github.event.pull_request.body }}")"
+          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}" "${PR_BODY}")"
 
           ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
       - name: Find Comment

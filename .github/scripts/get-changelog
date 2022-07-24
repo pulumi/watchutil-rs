@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail -x
+set -euo pipefail
 
 >&2 echo "::group::Get changelog"
 trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()

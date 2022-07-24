@@ -2,5 +2,7 @@ delete_merged_branches = true
 update_base_for_deletes = true
 
 status = [
-	'publish / Publish',
+	'Build OK',
+	'Test OK',
+	'Publish OK',
 ]

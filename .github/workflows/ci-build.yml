@@ -1,4 +1,4 @@
-name: Prerelease
+name: Build
 
 on:
   workflow_call:
@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     strategy:
+      fail-fast: true
       matrix:
         name:
           - linux-amd64-gnu
@@ -150,6 +151,8 @@ jobs:
         run: |
           set -euxo pipefail
           ext=""
+          # Spurious, this comparison will be equal for targets starting with "windows-"
+          # shellcheck disable=SC2193
           [[ "${{ matrix.name }}" == windows-* ]] && ext=".exe"
           bin="target/${{ matrix.target }}/release/pulumi-watch${ext}"
           objcopy --compress-debug-sections "$bin" || strip "$bin" || true
