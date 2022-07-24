@@ -42,7 +42,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }} --strip header")"
+          CHANGELOG="$(./.github/scripts/get-changelog "v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }}" --strip header)"
           ./.github/scripts/set-output release_notes "${CHANGELOG}"
 
   version-check:
