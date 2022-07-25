@@ -3,14 +3,13 @@ name: Release
 on:
   release:
     types:
-      - published
+      - released
 
 concurrency: release
 
 jobs:
   info:
     name: Get release version
-    if: startsWith(github.event.release.draft, 'release-')
     runs-on: ubuntu-latest
     outputs:
       version: "${{ fromJSON(steps.version.outputs.version) }}"
