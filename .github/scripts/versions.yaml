@@ -1,6 +1,6 @@
 replacements:
   - type: file
-    file: .github/workflows/version.txt
+    file: .version
     fileFormat: sed
     updatePath: .*
     versionFormat: ${SEMVER}

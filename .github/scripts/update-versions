@@ -44,9 +44,9 @@ yq() {
   pipx run yq==3.0.2 "$@"
 }
 
-N=$(yq '.replacements | length' versions.yaml)
+N=$(yq '.replacements | length' .github/scripts/versions.yaml)
 for n in $(seq 0 1 "$((N-1))"); do
-  replacement=$(yq ".replacements[$n]" versions.yaml)
+  replacement=$(yq ".replacements[$n]" .github/scripts/versions.yaml)
   type=$(yq -r '.type' <<< "$replacement")
 
   case "$type" in

@@ -6,4 +6,4 @@ set -euo pipefail
 trap ">&2 echo '::endgroup::'" EXIT # bash equivalent of defer func()
 
 # Remove whitespace, this is our version:
-tr -d '[:space:]' < ./.github/workflows/version.txt
+tr -d '[:space:]' < .version
