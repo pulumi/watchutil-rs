@@ -4,7 +4,7 @@ version = "0.1.2"#update-target
 
 authors = ["Aaron Friel <mayreply@aaronfriel.com>"]
 license = "Apache-2.0"
-description = "A process tree memory monitor"
+description = "A minimal filesystem watcher, based on watchexec"
 keywords = ["cli", "helper"]
 categories = ["command-line-utilities"]
 repository = "https://github.com/pulumi/pulumi-watch"
