@@ -11,8 +11,6 @@ jobs:
   lint:
     name: Lint
     uses: ./.github/workflows/ci-lint.yml
-    with:
-      super-linter: false
 
   unit-test:
     name: Unit Test
