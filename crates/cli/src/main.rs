@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{path::PathBuf, sync::Arc, time::Duration, collections::HashSet};
 
 use clap::{Parser, StructOpt};
 use miette::{Diagnostic, IntoDiagnostic, Result};
@@ -37,6 +37,7 @@ async fn main() -> Result<()> {
 
   use std::path::MAIN_SEPARATOR as SEP;
   let ignores: Vec<(String, Option<PathBuf>)> = vec![
+    // Default ignores used by watchexec.
     (format!("**{s}.DS_Store", s = SEP), None),
     (String::from("*.py[co]"), None),
     (String::from("#*#"), None),
@@ -57,6 +58,7 @@ async fn main() -> Result<()> {
   runtime.pathset(args.watch);
   runtime.action_throttle(Duration::from_millis(250));
 
+  // Note: to preserve existing watch behavior, we do not read/interpret other ignore files.
   let filter = GlobsetFilterer::new(args.origin, [], ignores, [], [])
     .await
     .into_diagnostic()?;
@@ -65,18 +67,25 @@ async fn main() -> Result<()> {
   let we = Watchexec::new(init, runtime.clone()).into_diagnostic()?;
 
   runtime.on_action(move |action: Action| async move {
-    for e in action.events.clone().iter() {
-      eprintln!("Got event {e:?}");
-      for s in e.signals() {
-        eprintln!("Got signal {s:?}");
+    let mut paths = HashSet::new();
+    for p in action.events.clone().iter() {
+      for (path, _) in p.paths() {
+        paths.insert(path.display().to_string());
+      }
+      for s in p.signals() {
         if let MainSignal::Interrupt | MainSignal::Quit | MainSignal::Terminate = s {
           action.outcome(Outcome::Exit);
           return Ok(());
         }
       }
     }
+    if !paths.is_empty() {
+      eprintln!("pulumi-watch: event on paths ${paths:?}");
+    }
 
-    println!("💜");
+    let timestamp = chrono::Utc::now();
+    let timestamp = timestamp.format("%+");
+    println!("{timestamp}");
 
     Ok(()) as Result<(), NoneError>
   });
