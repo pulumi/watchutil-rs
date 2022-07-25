@@ -14,26 +14,20 @@ body = """
 {% else %}\
     ## [unreleased]
 {% endif %}\
+{% if previous %}\
+    {% if previous.commit_id %}
+        [{{ previous.commit_id | truncate(length=7, end="") }}]({{ previous.commit_id }})...\
+            [{{ commit_id | truncate(length=7, end="") }}]({{ commit_id }})
+    {% endif %}\
+{% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | upper_first }}
-    {% for commit in commits
-    | filter(attribute="scope")
-    | sort(attribute="scope") %}
-        - *({{commit.scope}})* {{ commit.message | upper_first }}
-        {%- if commit.breaking %}
-        {% raw %}  {% endraw %}- **BREAKING**: {{commit.breaking_description}}
-        {%- endif -%}
-    {%- endfor -%}
-    {%- for commit in commits %}
-        {%- if commit.scope -%}
-        {% else -%}
-            - {{ commit.message | upper_first }}
-            {% if commit.breaking -%}
-            {% raw %}  {% endraw %}- **BREAKING**: {{commit.breaking_description}}
-            {% endif -%}
-        {% endif -%}
-    {% endfor -%}
-    {% raw %}\n{% endraw %}\
+    {% for commit in commits %}
+        - {% if commit.scope %}[{{ commit.scope }}] {% endif %}{{ commit.message | upper_first }} ([{{ commit.id | truncate(length=7, end="") }}]({{ commit.id }}))\
+          {% for footer in commit.footers -%}
+            , {{ footer.token }}{{ footer.separator }}{{ footer.value }}\
+          {% endfor %}\
+    {% endfor %}
 {% endfor %}\n
 """
 # remove the leading and trailing whitespace from the template
@@ -52,6 +46,7 @@ commit_preprocessors = [
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
+    { message = "^\\w+\\(ci\\)", skip = true},
     { message = "^feat", group = "Features"},
     { message = "^fix", group = "Bug Fixes"},
     { message = "^doc", group = "Documentation"},
