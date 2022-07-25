@@ -15,6 +15,7 @@ jobs:
       version: "${{ fromJSON(steps.version.outputs.version) }}"
       next_version: "${{ fromJSON(steps.version.outputs.next_version) }}"
     steps:
+      - uses: actions/checkout@v3
       - id: version
         run: |
           TAG="${{ github.event.release.tag_name }}"
