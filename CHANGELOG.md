@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4] - 2022-07-25
+
+### Miscellaneous Tasks
+
+- Clean up output, print timestamps on stdout for better diagnostics. ([a21a648](a21a64811fa3042e2ecfaa76f1a7a53df6d6d7ba))
+
 ## [0.1.3] - 2022-07-25
 
 [96aaca8](96aaca80545ff6940ad01cebfe377f260a48405e)...[7153c3b](7153c3b4dc7fba8c58cd9de7b4adf28079d04b2c)
