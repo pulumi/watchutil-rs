@@ -12,6 +12,7 @@ repository = "https://github.com/pulumi/pulumi-watch"
 edition = "2021"
 
 [dependencies]
+chrono = "0.4.19"
 clap = { version = "3.2.13", features = ["derive"] }
 futures = "0.3.19"
 ignore-files = "1.0.0"
