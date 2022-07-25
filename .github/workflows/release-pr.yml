@@ -33,8 +33,7 @@ jobs:
         run: |
           git switch --create "automation/release-v${VERSION}"
 
-          touch CHANGELOG.md
-          echo -en "${RELEASE_NOTES}\n\n$(cat CHANGELOG.md)" > ./CHANGELOG.md
+          echo -en "# Changelog\n\n${RELEASE_NOTES}\n\n$(tail -n+3 CHANGELOG.md)" > ./CHANGELOG.md
 
           ./.github/scripts/update-versions "${NEXT_VERSION}"
 
