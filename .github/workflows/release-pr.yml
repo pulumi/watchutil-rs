@@ -44,7 +44,7 @@ jobs:
           git add -A
 
           git commit -m "prepare for next release (v${NEXT_VERSION})"
-          git push -u origin HEAD --force
+          git push -u origin HEAD
 
           gh pr create \
             --title "prepare for next release (v${NEXT_VERSION})" \
