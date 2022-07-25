@@ -16,17 +16,16 @@ jobs:
       next_version: "${{ fromJSON(steps.version.outputs.next_version) }}"
     steps:
       - uses: actions/checkout@v3
-      - id: version
+      - name: Gather info
+        id: version
         run: |
           TAG="${{ github.event.release.tag_name }}"
-          VERSION="${TAG/^v/}" # remove prefix
+          VERSION="${TAG#v}" # remove prefix
 
           ./.github/scripts/set-output version "${VERSION}"
 
           NEXT_VERSION="$(.github/scripts/get-next-version "${VERSION}")"
           ./.github/scripts/set-output next_version "${NEXT_VERSION}"
-      - id: notes
-        run: echo OK
 
   rust-crate:
     name: Publish Crates
