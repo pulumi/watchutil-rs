@@ -3,7 +3,7 @@
 	<assemblyIdentity
 		type="win32"
 		name="Pulumi.Cli.Watch"
-		version="0.1.4.0"
+		version="0.1.5.0"
 	/>
 
 	<trustInfo>

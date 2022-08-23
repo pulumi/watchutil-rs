@@ -1,5 +1,13 @@
 # Changelog
 
+## [uncommitted] (2022-08-23)
+
+
+### Bug Fixes
+
+- [ci] Implement file based changelog tool in Go
+  [#30](https://github.com/pulumi/pulumi/pulls/30)
+
 ## [0.1.3] - 2022-07-25
 
 [96aaca8](96aaca80545ff6940ad01cebfe377f260a48405e)...[7153c3b](7153c3b4dc7fba8c58cd9de7b4adf28079d04b2c)
