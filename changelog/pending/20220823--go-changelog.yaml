@@ -1,0 +1,4 @@
+changes:
+- type: fix
+  description: Implement file based changelog tool in Go
+  scope: ci/actions
