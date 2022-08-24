@@ -2,11 +2,6 @@ name: PR Changelog
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - edited
 
 defaults:
   run:
@@ -20,25 +15,25 @@ jobs:
   check:
     name: Preview
     runs-on: ubuntu-latest
+    outputs:
+      release_notes: "${{ fromJSON(steps.changelog.outputs.CHANGELOG) }}"
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Install git-cliff
-        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
+      - uses: actions/setup-go@v3
         with:
-          crate: git-cliff
-          args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
-          version: 0.8.1
+          go-version: 1.19.x
+          cache: true
+          cache-dependency-path: tools/changelog/go.sum
       - name: Changelog
         id: changelog
         env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run:
+          GITHUB_PR: ${{ github.event.pull_request.number }}
+        run: |
           PREVIOUS_VERSION="${{ github.event.pull_request.base.sha }}"
           CHANGELOG_REQUIRED="${{ !contains(github.event.pull_request.labels.*.name, 'impact/no-changelog-required') }}"
-          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}" "${PR_BODY}")"
-
+          CHANGELOG="$(./.github/scripts/get-changelog-comment "${PREVIOUS_VERSION}" "${CHANGELOG_REQUIRED}" "${GITHUB_PR}")"
           ./.github/scripts/set-output CHANGELOG "${CHANGELOG}"
       - name: Find Comment
         uses: peter-evans/find-comment@1769778a0c5bd330272d749d12c036d65e70d39d # v2.0.0
@@ -58,3 +53,15 @@ jobs:
 
             ${{ fromJSON(steps.changelog.outputs.CHANGELOG) }}
           edit-mode: replace
+
+  # Test a post-release PR without doing a merge:
+  release-pr:
+    name: Post-Release PR
+    needs: [check]
+    uses: ./.github/workflows/release-pr.yml
+    with:
+      version: main
+      next_version: "0.1.6"
+      branch_from_ref: pull/${{ github.event.pull_request.number }}/merge
+      release_notes: ${{ needs.check.outputs.release_notes }}
+    secrets: inherit

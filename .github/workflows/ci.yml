@@ -29,12 +29,11 @@ jobs:
           VERSION="$(./.github/scripts/get-version)"
 
           ./.github/scripts/set-output version "${VERSION}"
-      - name: Install git-cliff
-        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
+      - uses: actions/setup-go@v3
         with:
-          crate: git-cliff
-          args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
-          version: 0.8.1
+          go-version: 1.19.x
+          cache: true
+          cache-dependency-path: tools/changelog/go.sum
       - name: Extract release notes
         id: notes
         shell: bash
@@ -42,7 +41,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get previous version
         run: |
           PREVIOUS_VERSION="$(./.github/scripts/get-previous-version)"
-          CHANGELOG="$(./.github/scripts/get-changelog "v${PREVIOUS_VERSION}" --tag "${{ fromJSON(steps.version.outputs.version) }}" --strip header)"
+          CHANGELOG="$(./.github/scripts/get-changelog "v${PREVIOUS_VERSION}" --version "${{ fromJSON(steps.version.outputs.version) }}")"
           ./.github/scripts/set-output release_notes "${CHANGELOG}"
 
   version-check:

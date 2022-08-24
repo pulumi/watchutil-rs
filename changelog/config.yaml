@@ -1,0 +1,8 @@
+# map of short names for change types to headings in output
+types:
+  feat: Features
+  fix: Bug Fixes
+  chore: Miscellaneous Tasks
+scopes:
+  cli: []
+  ci: [actions, build]
