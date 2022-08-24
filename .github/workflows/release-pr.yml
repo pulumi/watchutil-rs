@@ -7,6 +7,10 @@ on:
         required: true
         description: "Version to produce"
         type: string
+      branch_from_ref:
+        required: false
+        description: "Commit to branch from, if not the tag"
+        type: string
       next_version:
         required: true
         description: "Version to bump files to"
@@ -23,6 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: git fetch --tags && git checkout tags/v${{ inputs.version }}
+        if: ${{ !inputs.branch_from_ref }}
+      - run: git fetch --tags && git fetch origin ${{ inputs.branch_from_ref }}:local_ref && git checkout local_ref
+        if: ${{ inputs.branch_from_ref }}
       - env:
           VERSION: ${{ inputs.version }}
           NEXT_VERSION: ${{ inputs.next_version }}
@@ -40,10 +47,13 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
+          mkdir -p ./changelog/released
+          mkdir -p ./changelog/pending
+          mv ./changelog/pending/* ./changelog/released/
           git add -A
 
           git commit -m "prepare for next release (v${NEXT_VERSION})"
-          git push -u origin HEAD
+          git push -u origin HEAD --force
 
           gh pr create \
             --title "prepare for next release (v${NEXT_VERSION})" \
