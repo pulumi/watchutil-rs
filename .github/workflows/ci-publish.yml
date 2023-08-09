@@ -46,6 +46,7 @@ jobs:
         run: sha512sum pulumi-watch-* | tee SHA512SUMS
 
       - name: Sign checksums
+        if: false # TODO(https://github.com/pulumi/watchutil-rs/issues/40): This step is currently broken.
         shell: bash
         env:
           RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
