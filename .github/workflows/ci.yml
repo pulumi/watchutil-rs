@@ -115,7 +115,6 @@ jobs:
     name: Publish
     needs: [test-ok, version-check, info]
     uses: ./.github/workflows/ci-publish.yml
-    if: github.event_name == 'merge_group'
     with:
       version: ${{ needs.info.outputs.version }}
       release_notes: ${{ needs.info.outputs.release_notes }}
