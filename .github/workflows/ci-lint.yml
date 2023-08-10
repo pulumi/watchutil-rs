@@ -22,5 +22,5 @@ jobs:
       - run: |
           # These vars are format strings.
           # shellcheck disable=SC2016
-          go run github.com/rhysd/actionlint/cmd/actionlint@v1.6.15 \
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.6.25 \
             -format '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}%0A```%0A{{replace $err.Snippet "\\n" "%0A"}}%0A```\n{{end}}' -ignore 'SC2016:'

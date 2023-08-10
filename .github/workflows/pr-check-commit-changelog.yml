@@ -25,11 +25,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install git-cliff
-        uses: baptiste0928/cargo-install@bf6758885262d0e6f61089a9d8c8790d3ac3368f # v1.3.0
+        uses: baptiste0928/cargo-install@30f432979e99f3ea66a8fa2eede53c07063995d8 # v2.1.0
         with:
           crate: git-cliff
-          args: --git https://github.com/AaronFriel/git-cliff --rev 702c79236ef0b0a3d2430f73902db3339933fbfd
-          version: 0.8.1
+          git: https://github.com/AaronFriel/git-cliff
+          commit: 702c79236ef0b0a3d2430f73902db3339933fbfd
       - name: Changelog
         id: changelog
         env:
