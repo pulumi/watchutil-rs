@@ -1,8 +1,8 @@
+permissions: write-all # Equivalent to default permissions plus id-token: write
 name: Merge
 
 on:
-  merge_group:
-
+  merge_group: null
 jobs:
   info:
     name: Gather info

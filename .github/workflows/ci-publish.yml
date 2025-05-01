@@ -1,3 +1,4 @@
+permissions: write-all # Equivalent to default permissions plus id-token: write
 name: Publish (Prerelease)
 
 on:
@@ -14,6 +15,11 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ESC_ACTION_OIDC_AUTH: true
+  ESC_ACTION_OIDC_ORGANIZATION: pulumi
+  ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
+  ESC_ACTION_ENVIRONMENT: imports/github-secrets
+  ESC_ACTION_EXPORT_ENVIRONMENT_VARIABLES: false
 
 jobs:
   sign:
@@ -21,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Fetch secrets from ESC
+        id: esc-secrets
+        uses: pulumi/esc-action@v1
       - uses: actions/checkout@v2
 
       - name: Install rsign2
@@ -49,7 +58,7 @@ jobs:
         if: false # TODO(https://github.com/pulumi/watchutil-rs/issues/40): This step is currently broken.
         shell: bash
         env:
-          RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
+          RELEASE_KEY: ${{ steps.esc-secrets.outputs.RELEASE_KEY }}
           version: ${{ inputs.version }}
         run: |
           set -u
