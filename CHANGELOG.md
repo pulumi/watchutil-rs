@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5] - 2022-07-26
+
+### Miscellaneous Tasks
+
+- Update readme along with rename of repo to pulumi/watchutil-rs ([ec582e5](ec582e54503cf58997d57216d313373683446bdf))
+
 ## [0.1.4] - 2022-07-25
 
 ### Miscellaneous Tasks
